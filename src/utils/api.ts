@@ -1,5 +1,6 @@
+import { useModalStore } from '../stores/modalStore';
 import { B, fetchData } from './convert';
-import { useModal } from '../components/useModal';
+// import { useModal } from '../components/useModal';
 // src/utils/api.ts
 export async function A(url: string) {
   const resultFromB = B();
@@ -19,8 +20,8 @@ export async function C(url: string) {
 }
 
 export function D() {
-  console.log('D called'); // Add this line
-  const { showModal } = useModal(); // เรียกใช้ useModal และดึง showModal
-  showModal(); // เรียกใช้ showModal
+    const modalStore = useModalStore();
+    const { showModal } = modalStore;
+    showModal('modal2'); // เปิด modal ด้วย id
   return 'Real implementation of D';
 }

@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { A, C, D } from './api'; // Import A, C, D
 import * as fetchData from './convert'; // Import fetchData
-import { useModal } from '../components/useModal'; // Import useModal
 import { ref } from 'vue';
+import { createPinia, setActivePinia } from 'pinia';
+import { useModalStore } from '../stores/modalStore';
 
 // Mock ทั้งโมดูล convert.ts
 vi.mock('./convert', async (importOriginal) => {
@@ -14,17 +15,15 @@ vi.mock('./convert', async (importOriginal) => {
   };
 });
 
-// Mock useModal
-vi.mock('../components/useModal', () => ({
-  useModal: vi.fn(() => ({
-    showModal: vi.fn(), // Mock showModal
-  })),
-}));
 
 describe('A and C functions', () => {
   // รีเซ็ต mocked functions ก่อนการรันแต่ละ test case
   beforeEach(() => {
     vi.restoreAllMocks(); // หรือใช้ vi.resetAllMocks() หากต้องการรีเซ็ตแต่ไม่คืนค่า implementation จริง
+
+    const pinia = createPinia();
+    setActivePinia(pinia);
+
   });
 
   it('should return correct result for A with mocked B and fetchData', async () => {
@@ -61,24 +60,17 @@ describe('A and C functions', () => {
     );
   });
 
-  describe('D function', () => {
-    it('should call showModal and return correct value', () => {
-      // Mock useModal และ showModal
-      const mockShowModal = vi.fn();
-      vi.mocked(useModal).mockReturnValue({
-        modalRef: ref(null), // Mock modalRef
-        showModal: mockShowModal, // Mock showModal
-        closeModal: vi.fn(), // Mock closeModal
-      });
+  it('should call showModal with "modal2"', () => {
+    // Arrange
+    const modalStore = useModalStore();
+    const showModalSpy = vi.spyOn(modalStore, 'showModal'); // Spy on the showModal action
 
-      // เรียก function D
-      const result = D();
+    // Act
+    const result = D();
 
-      // ตรวจสอบว่า showModal ถูกเรียก
-      expect(mockShowModal).toHaveBeenCalled();
-
-      // ตรวจสอบว่าผลลัพธ์ที่ได้ถูกต้อง
-      expect(result).toBe('Real implementation of D');
-    });
+    // Assert
+    expect(showModalSpy).toHaveBeenCalledWith('modal2'); // Verify showModal was called with 'modal2'
+    expect(result).toBe('Real implementation of D'); // Verify the return value
   });
+
 });
